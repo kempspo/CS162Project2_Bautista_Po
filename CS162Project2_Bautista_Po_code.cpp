@@ -2,8 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 
 using namespace std;
+
+
+int testcase;
+int numprocess, numresource;
+int check;
 
 //checks for unfinished processes
 int checkBool(int check[]){
@@ -20,17 +26,13 @@ int main(int argc, char* argv[])
 	fstream file;
 	file.open(sfile);
 
+	int have[numprocess][numresource], need[numprocess][numresource];
+	int resource[numresource];
+
 	if( !file.is_open()){
 		cout << "Unable to open file";
 		exit(1);
 	}
-
-	int testcase;
-	int numprocess, numresource;
-	int check;
-	int resource[numresource];
-	int have[numprocess][numresource], need[numprocess][numresource];
-
 	/** looping through file for input **/
 	file >> testcase;
 	for(int i = 0; i < testcase; i++){
@@ -41,7 +43,7 @@ int main(int argc, char* argv[])
 		}
 		//gets resources each process has
 		for(int j = 0; j < numprocess; j++){
-			check[i] = 0;
+			check[&i] = 0;
 			for(int k = 0; k < numresource; k++){
 				file >> have[j][k];
 			}
@@ -61,13 +63,13 @@ int main(int argc, char* argv[])
 	int doneCount = 0;
 
 	// just check until all processes are done
-	while(!checkBool(check)){
+	while(!checkBool(&check)){
 		for( int i = 0; i < numprocess; i++){
 			deadlock = 1;
-			if(check[i] == 0){
+			if(check[&i] == 0){
 				for(int j = 0; j < numresource; j++){
 					//check if resource can be given to process by available
-					if(need[i][j] <= available[j]){
+					if(need[i][j] <= resource[j]){
 						counter++; // add to counter if allocated
 					}
 				}
@@ -75,14 +77,14 @@ int main(int argc, char* argv[])
 				// if equal then it just means can already be filled
 				if(counter == numresource)
 				{
-					check[i] = 1;
+					check[&i] = 1;
 					counter = 0;
 					deadlock = 0;
 
 					//allocate resource to process
 					for(int k = 0; k < numresource; k++)
 					{
-						available[k] += have[i][k];
+						resource[k] += have[i][k];
 					}
 
 					finish[doneCount] = i + 1;
@@ -95,7 +97,6 @@ int main(int argc, char* argv[])
 	}	
 		if(deadlock){
 			cout << "Deadlock occured\n";
-			break;
 		}
 		if(!deadlock){
 			cout << "Process Request Order:\n";
